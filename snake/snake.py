@@ -1,41 +1,23 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-"""This module's docstring summary line.
+"""The old  game classic "Snake" in Python
 
-This is a multi-line docstring. Paragraphs are separated with blank lines.
-Lines conform to 79-column limit.
-
-Module and packages names should be short, lower_case_with_underscores.
-Notice that this in not PEP8-cheatsheet.py
-
-Seriously, use flake8. Atom.io with https://atom.io/packages/linter-flake8
-is awesome!
-See http://www.python.org/dev/peps/pep-0008/ for more PEP-8 details
-
-
-
-
-@todo: Create proper project structure
+Open issues:
 @todo: Check class syntax
 @todo: Check class naming convention
-@todo:  Create runner.py and import snake.py
 @todo: Check proper ways of documentation / doxygen etc. 
-@todo: Proper commenting
-
-
-
-
+@todo: Add proper commenting
+@todo: Requirements.txt test on linux (e.g. create install.py?)
 """
 
 from random import randrange # STD lib imports first
 import curses # 3rd party stuff next
 
-
-
 class Snake():
-    """Write docstrings for ALL public classes, funcs and methods.
+    """The old  game classic "Snake" in Python
 
-    Functions use snake_case.
+    This is a very simple Python implementation of the game "Snake" 
+    using the curses UI framework. 
     """
 
     # Snake elements
@@ -55,29 +37,27 @@ class Snake():
     # Refresh rate
     refresh_rate = 0
 
+    # Points
     points = 0
-
-    # def __init__(self):
-    #     self.data = []
 
     def _init(self, num_rows, num_cols):
 
-        # Create snake
+        # Inital snake position 
         pos_x = int(num_cols / 2)
         pos_y = int(num_rows / 2)    
 
+        # Generate snake
         self.snake = [[pos_x    , pos_y],
                       [pos_x + 1, pos_y],
                       [pos_x + 2, pos_y]]
 
-        # Generate inital food
-        self.food =  [randrange(1, num_cols - 1), 
-                      randrange(1, num_rows - 1)] 
+        # Generate food
+        self.food = self._generate_food(num_rows, num_cols)    
 
         self.direction = [ -1, 0 ]
-
+        
         self.refresh_rate = 200
-
+        
         self.points = 0
 
     def _setup_curses(self):
@@ -111,6 +91,11 @@ class Snake():
 
         return stdscr
 
+
+    def _generate_food(self, num_rows, num_cols):
+        return  [randrange(1, num_cols - 1), 
+                 randrange(1, num_rows - 1)] 
+
     def run(self):
         # Setup curses
         curses_screen = self._setup_curses()
@@ -123,7 +108,6 @@ class Snake():
 
         # Game loop
         run_game = True
-
         while run_game:
             # Do not wait for any key when get user input
             curses_screen.nodelay(True)
@@ -137,6 +121,7 @@ class Snake():
             self.snake.insert(0, tuple(map(sum, zip(self.snake[0], self.direction))) ) 
 
             # Create new food if food was eaten
+            # @todo: Optimize comparison
             if self.snake[0][0] == self.food[0] and self.snake[0][1] == self.food[1]:
                 # Add points
                 self.points = self.points + 10
@@ -144,8 +129,7 @@ class Snake():
                 # Generate new food
                 self.food = []
                 while self.food == []:
-                    tmp_food = [randrange(1, num_cols - 1), 
-                                randrange(1, num_rows - 1)] 
+                    tmp_food = self._generate_food(num_rows, num_cols)  
 
                     # Make sure that food is not generated within snake 
                     if tmp_food not in self.snake:
@@ -176,7 +160,7 @@ class Snake():
                 snake_contact = True
 
             if border_contact or snake_contact:
-                curses_screen.addstr(5,5, "You lost! Try again [Y/N]?")
+                curses_screen.addstr(5,5, "You lost! Try again [Y/*]?")
                 curses_screen.nodelay(False)
 
                 c = curses_screen.getch()
@@ -184,7 +168,7 @@ class Snake():
                 if c == ord("y"):    
                     # ReInitialize game
                     self._init(num_rows, num_cols)
-                elif c == ord("n"):
+                else:
                     # Quit game
                     run_game = False                
             else:        
@@ -208,19 +192,8 @@ class Snake():
             # Redraw
             curses_screen.refresh()
 
-        # Terminate
+        # Terminate curses application
         curses.nocbreak()
         curses_screen.keypad(0)
-        curses_screen.echo()
-        curses_screen.endwin()
-
-    
-
-    
-
-
-# Start curses application
-if __name__ == "__main__":
-    s = Snake()
-
-    s.run()
+        curses.echo()
+        curses.endwin()
