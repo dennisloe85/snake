@@ -1,4 +1,4 @@
-from snake import Snake
+from snake.snake import Snake
 
 # Start application
 if __name__ == '__main__':
