@@ -25,6 +25,7 @@ You can control the snake using the following keys:
 | Down     | `↓` or `a` |
 | Left     | `←` or `s` |
 | Right    | `→` or `d` |
+| Quit     | `p`        |
 
 ## Release History
 
