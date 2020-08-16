@@ -5,13 +5,16 @@
 Open issues:
 @todo: Check class syntax
 @todo: Check class naming convention
-@todo: Check proper ways of documentation / doxygen etc. 
 @todo: Add proper commenting
 @todo: Requirements.txt test on linux (e.g. create install.py?)
 """
 
 from random import randrange # STD lib imports first
 import curses # 3rd party stuff next
+
+# Constants
+REFRESH_RATE_DEFAULT = 200
+
 
 class Snake():
     """The old  game classic "Snake" in Python
@@ -52,11 +55,11 @@ class Snake():
                       [pos_x + 2, pos_y]]
 
         # Generate food
-        self.food = self._generate_food(num_rows, num_cols)    
+        self.food = self._generate_food(num_cols, num_rows)    
 
         self.direction = [ -1, 0 ]
         
-        self.refresh_rate = 200
+        self.refresh_rate = REFRESH_RATE_DEFAULT
         
         self.points = 0
 
@@ -92,7 +95,7 @@ class Snake():
         return stdscr
 
 
-    def _generate_food(self, num_rows, num_cols):
+    def _generate_food(self, num_cols, num_rows):
         return  [randrange(1, num_cols - 1), 
                  randrange(1, num_rows - 1)] 
 
@@ -118,18 +121,17 @@ class Snake():
             curses_screen.addstr(2, 2 , "Points: " + str(self.points))
 
             # Move snake in current direction
-            self.snake.insert(0, tuple(map(sum, zip(self.snake[0], self.direction))) ) 
+            self.snake.insert(0, list(map(sum, zip(self.snake[0], self.direction))) ) 
 
             # Create new food if food was eaten
-            # @todo: Optimize comparison
-            if self.snake[0][0] == self.food[0] and self.snake[0][1] == self.food[1]:
+            if self.snake[0] == self.food:
                 # Add points
-                self.points = self.points + 10
+                self.points += 10
 
                 # Generate new food
                 self.food = []
                 while self.food == []:
-                    tmp_food = self._generate_food(num_rows, num_cols)  
+                    tmp_food = self._generate_food(num_cols, num_rows)  
 
                     # Make sure that food is not generated within snake 
                     if tmp_food not in self.snake:
@@ -142,12 +144,7 @@ class Snake():
 
             # Draw snake
             for i, snake_element in enumerate(self.snake):
-                # Defaut element
-                ch = "o"        
-                # Head element      
-                if i == 0:
-                    ch = "x"    
-                curses_screen.addch(snake_element[1], snake_element[0], ch )
+                curses_screen.addch(snake_element[1], snake_element[0], "o" if i != 0 else "x" )
 
             # Check border contact
             border_contact = False
@@ -159,6 +156,7 @@ class Snake():
             if self.snake[0] in self.snake[1:]:
                 snake_contact = True
 
+            # Check if game is over
             if border_contact or snake_contact:
                 curses_screen.addstr(5,5, "You lost! Try again [Y/*]?")
                 curses_screen.nodelay(False)
@@ -171,7 +169,8 @@ class Snake():
                 else:
                     # Quit game
                     run_game = False                
-            else:        
+            else:    
+                # Get user input    
                 c = curses_screen.getch()
 
                 if c == curses.KEY_UP or c == ord("w"):
@@ -186,7 +185,11 @@ class Snake():
                 elif c == curses.KEY_RIGHT or c == ord("d"):
                     if self.direction[0] == 0:
                         self.direction = [1, 0]
+                elif c == ord("p"):
+                    # Quit game
+                    run_game = False     
 
+            # Control update rate
             curses.napms( int(self.refresh_rate) )
 
             # Redraw
