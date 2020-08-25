@@ -27,6 +27,8 @@ You can control the snake using the following keys:
 | Right    | `→` or `d` |
 | Quit     | `p`        |
 
+Test
+
 ## Release History
 
 * 0.2
